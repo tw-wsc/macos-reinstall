@@ -39,7 +39,8 @@ fi
 
 # Directory in which to place the macOS installer
 installer_directory="/Applications"
-
+user=`stat -f "%Su" /dev/console`
+desktop="/Users/$user/Desktop"
 # Temporary working directory
 workdir="/Library/Management/erase-install"
 
@@ -48,8 +49,11 @@ macOSDMG=$( find ${workdir}/*.dmg -maxdepth 1 -type f -print -quit 2>/dev/null )
 # Functions
 
 find_existing_installer() {
+    # Find installer at /Application and User's Desktop
     installer_app=$( find "${installer_directory}/Install macOS"*.app -maxdepth 1 -type d -print -quit 2>/dev/null )
-
+    if [[ "${installer_app}" = "" ]]; then
+      installer_app=$( find "${desktop}/Install macOS"*.app -maxdepth 1 -type d -print -quit 2>/dev/null )
+    fi
     # First let's see if there's an already downloaded installer
     if [[ -d "${installer_app}" ]]; then
         # make sure it is 10.13.4 or newer so we can use --eraseinstall
@@ -140,3 +144,4 @@ echo "[ $(date) ] WARNING! Running ${installmacOSApp} with eraseinstall option"
 echo
 
 "${installmacOSApp}/Contents/Resources/startosinstall" --applicationpath "${installmacOSApp}" --eraseinstall --agreetolicense --nointeraction
+
