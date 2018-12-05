@@ -7,10 +7,8 @@
 #
 #
 # Specifically, this script does the following:
-# 1. Checks whether this script has already been run with the `cache` argument and downloaded an installer dmg to the working directory, and mounts it if so.
 # 1. Checks whether a valid existing macOS installer (>= 10.13.4) is already present in the `/Applications` folder
-# 2. If no installer is present, downloads "Install MacOS Mojave" in App Store first.
-# 3. If run without an argument, runs `startosinstall --eraseinstall` with the relevant options in order to wipe the drive and reinstall macOS.
+# 2. If run without an argument, runs `startosinstall --eraseinstall` with the relevant options in order to wipe the drive and reinstall macOS.
 #
 # Requirements:
 # macOS 10.13.4+ is already installed on the device
@@ -23,9 +21,13 @@
 # 4. Clear old install logs
 # 5. Send laptop data wipe email
 
+# Feature added by Zhang Jian(jnzhang@thoughtworks.com) on 4.12.2018
+# 1. User notice
+# 2. Prevent the display from sleeping
+
 
 # User notice
-SURETY="$(osascript -e 'display dialog "This laptop will be erased once the downloading is completed, it will take some time. Please connect to the Internet and make sure it has enough power." with title "Erase macOS" buttons {"Cancel", "Okay"} default button "Okay" with icon caution giving up after 10')"
+SURETY="$(osascript -e 'display dialog "This laptop will be erased once the downloading is completed, it will take some time. \nPlease connect to the Internet and make sure it has enough power." with title "Erase macOS" buttons {"Cancel", "Okay"} default button "Okay" with icon caution giving up after 10')"
 
 if [ "$SURETY" = "button returned:Okay, gave up:false" ]; then
     echo "Starting erase-install ..."
@@ -41,6 +43,7 @@ fi
 installer_directory="/Applications"
 user=`stat -f "%Su" /dev/console`
 desktop="/Users/$user/Desktop"
+filesize=$(find "${installer_directory}/Install macOS"*.app -type f -size +1G 2>/dev/null)
 # Temporary working directory
 workdir="/Library/Management/erase-install"
 
@@ -49,13 +52,20 @@ macOSDMG=$( find ${workdir}/*.dmg -maxdepth 1 -type f -print -quit 2>/dev/null )
 # Functions
 
 find_existing_installer() {
-    # Find installer at /Application and User's Desktop
+    #Check installer location
     installer_app=$( find "${installer_directory}/Install macOS"*.app -maxdepth 1 -type d -print -quit 2>/dev/null )
     if [[ "${installer_app}" = "" ]]; then
       installer_app=$( find "${desktop}/Install macOS"*.app -maxdepth 1 -type d -print -quit 2>/dev/null )
+      installer_directory="/Users/$user/Desktop"
     fi
     # First let's see if there's an already downloaded installer
     if [[ -d "${installer_app}" ]]; then
+        #Check installer size
+        if [[ "${filesize}" = "" ]]; then
+#          osascript -e 'display dialog "安装文件不完整，请删除已下载的安装文件后重新下载. 联系techops-support@thoughtworks.com获得更多帮助." with title "安装文件效验失败" buttons "Okay" default button "Okay" with icon caution'
+          osascript -e 'display dialog "Installer incomplete.\nPlease remove the installer and download again.\n\nEmail to techops-support@thoughtworks.com for more help." with title "macOS installer incomplete" buttons "Okay" default button "Okay" with icon caution'
+          exit
+        fi
         # make sure it is 10.13.4 or newer so we can use --eraseinstall
         installer_version=$( /usr/libexec/PlistBuddy -c 'Print CFBundleVersion' "${installer_app}/Contents/Info.plist" 2>/dev/null | cut -c1-3 )
         if [[ ${installer_version} > 133 ]]; then
@@ -69,48 +79,12 @@ find_existing_installer() {
     fi
 }
 
-run_installinstallmacos() {
-    if [[ ! -d "${workdir}" ]]; then
-        echo
-        echo "[ $(date) ] Making working directory at ${workdir}"
-        echo
-        mkdir -p ${workdir}
-    fi
-
-    macOSDMG=$( find ${workdir} -maxdepth 1 -name 'Install_macOS*.dmg'  -print -quit )
-}
-
-# Main body
-
-[[ $1 == "cache" || $4 == "cache" ]] && cache_only="yes" || cache_only="no"
-
-# Look for the installer, download it if it is not present
-find_existing_installer
-if [[ ! -d "${installmacOSApp}" ]]; then
-    run_installinstallmacos
-fi
 
 # Now look again
 find_existing_installer
 if [[ ! -d "${installmacOSApp}" ]]; then
     echo "[ $(date) ] macOS Installer not found, cannot continue"
     exit 1
-fi
-
-if [[ ${cache_only} == "yes" ]]; then
-    appName=$( basename "$installmacOSApp" )
-    if [[ ! -d "${installmacOSApp}" ]]; then
-        echo "[ $(date) ] Installer is at: $installmacOSApp"
-    fi
-
-    # Unmount the dmg
-    existingInstaller=$( find /Volumes -maxdepth 1 -type d -name 'Install macOS*' -print -quit )
-    if [[ -d "${existingInstaller}" ]]; then
-        diskutil unmount force "${existingInstaller}"
-    fi
-    # Clear the working directory
-    rm -rf "${workdir}/content"
-    exit
 fi
 
 # Check Bootcamp and delete it if exist
@@ -144,4 +118,3 @@ echo "[ $(date) ] WARNING! Running ${installmacOSApp} with eraseinstall option"
 echo
 
 "${installmacOSApp}/Contents/Resources/startosinstall" --applicationpath "${installmacOSApp}" --eraseinstall --agreetolicense --nointeraction
-
