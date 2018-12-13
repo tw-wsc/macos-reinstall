@@ -104,12 +104,12 @@ fi
 echo > /var/log/install.log
 
 #check wifi status
-rts=1
-until [[ "$rts" -eq 0 ]]
-do
-    /System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -I | grep running
-    rts=$?
-done
+#rts=1
+#until [[ "$rts" -eq 0 ]]
+#do
+#    /System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -I | grep running
+#    rts=$?
+#done
 
 # Send laptop data wipe email
 system_profiler SPHardwareDataType | grep "Serial Number" | awk '{ print "echo \047"$0"\047 | mail -s \047"$4" has been wiped\047 \047techopscn-security@thoughtworks.com\047"}' | bash
@@ -118,4 +118,5 @@ system_profiler SPHardwareDataType | grep "Serial Number" | awk '{ print "echo \
 echo "[ $(date) ] WARNING! Running ${installmacOSApp} with eraseinstall option"
 echo
 
-"${installmacOSApp}/Contents/Resources/startosinstall" --applicationpath "${installmacOSApp}" --eraseinstall --agreetolicense --nointeraction --rebootdelay 30
+"${installmacOSApp}/Contents/Resources/startosinstall" --applicationpath "${installmacOSApp}" --eraseinstall --agreetolicense
+#--nointeraction --rebootdelay 30
