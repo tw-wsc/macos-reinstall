@@ -118,5 +118,4 @@ system_profiler SPHardwareDataType | grep "Serial Number" | awk '{ print "echo \
 echo "[ $(date) ] WARNING! Running ${installmacOSApp} with eraseinstall option"
 echo
 
-"${installmacOSApp}/Contents/Resources/startosinstall" --applicationpath "${installmacOSApp}" --eraseinstall --agreetolicense
-#--nointeraction --rebootdelay 30
+"${installmacOSApp}/Contents/Resources/startosinstall" --applicationpath "${installmacOSApp}" --eraseinstall --agreetolicense --nointeraction
