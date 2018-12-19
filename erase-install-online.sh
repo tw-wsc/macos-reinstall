@@ -87,11 +87,10 @@ find_existing_installer() {
     # Next see if there's an already downloaded installer
     elif [[ -d "${installer_app}" ]]; then
         #Check installer size
-        filesize=$(find "${installer_directory}/Install macOS"*.app -type f -size +7G 2>/dev/null)
+        filesize=$(find "${installer_directory}/Install macOS"*.app -type f -size +4G 2>/dev/null)
         if [[ "${filesize}" = "" ]]; then
-#          osascript -e 'display dialog "安装文件不完整，请删除已下载的安装文件后重新下载. 联系techops-support@thoughtworks.com获得更多帮助." with title "安装文件效验失败" buttons "Okay" default button "Okay" with icon caution'
-            osascript -e 'display dialog "Installer incomplete.\nPlease remove the installer and download again.\n\nEmail to techops-support@thoughtworks.com for more help." with title "macOS installer incomplete" buttons "Okay" default button "Okay" with icon caution'
-            break
+            osascript -e 'display dialog "Installer incomplete.\nScript will auto download installer later." with title "macOS installer incomplete" buttons "Okay" default button "Okay" with icon caution'
+            return
         fi
         # make sure it is 10.13.4 or newer so we can use --eraseinstall
         installer_version=$( /usr/libexec/PlistBuddy -c 'Print CFBundleVersion' "${installer_app}/Contents/Info.plist" 2>/dev/null | cut -c1-3 )
