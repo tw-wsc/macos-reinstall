@@ -27,7 +27,7 @@
 
 
 # User notice
-SURETY="$(osascript -e 'display dialog "This laptop will be erased once the downloading is completed, it will take some time. Please connect to the Internet and make sure it has enough power." with title "Erase macOS" buttons {"Cancel", "Okay"} default button "Okay" with icon caution giving up after 10')"
+SURETY="$(osascript -e 'display dialog "This laptop will be erased once the installer is available, it will take some time. Please connect to the Internet and make sure it has enough power." with title "Erase macOS" buttons {"Cancel", "Okay"} default button "Okay" with icon caution giving up after 10')"
 
 if [ "$SURETY" = "button returned:Okay, gave up:false" ]; then
     echo "Starting erase-install ..."
