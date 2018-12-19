@@ -72,13 +72,6 @@ installer_app=$( find "${desktop}/Install macOS"*.app -maxdepth 1 -type d -print
 installer_directory="/Users/$user/Desktop"
 fi
 
-#Check installer size
-filesize=$(find "${installer_directory}/Install macOS"*.app -type f -size +4G 2>/dev/null)
-if [[ "${filesize}" = "" ]]; then
-#          osascript -e 'display dialog "安装文件不完整，请删除已下载的安装文件后重新下载. 联系techops-support@thoughtworks.com获得更多帮助." with title "安装文件效验失败" buttons "Okay" default button "Okay" with icon caution'
-  osascript -e 'display dialog "Installer incomplete.\nPlease remove the installer and download again.\n\nEmail to techops-support@thoughtworks.com for more help." with title "macOS installer incomplete" buttons "Okay" default button "Okay" with icon caution'
-  exit
-fi
 
 # Functions
 
