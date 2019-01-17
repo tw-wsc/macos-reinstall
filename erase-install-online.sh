@@ -83,7 +83,7 @@ find_existing_installer() {
         echo "[ $(date) ] Mounting ${macOSDMG}"
         echo
         hdiutil attach "${macOSDMG}"
-        installmacOSApp=$( find '/Volumes/Install macOS'*/*.app -maxdepth 1 -type d -print -quit 2>/dev/null )
+        installmacOSApp=$( find '/Volumes/Install_macOS'*/*.app -maxdepth 1 -type d -print -quit 2>/dev/null )
     # Next see if there's an already downloaded installer
     elif [[ -d "${installer_app}" ]]; then
         #Check installer size
